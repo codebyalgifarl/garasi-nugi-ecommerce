@@ -39,3 +39,42 @@ export const registerSchema = z.object({
 });
 
 export type RegisterFormValues = z.infer<typeof registerSchema>;
+
+/* ------------------------------------------------------------------ */
+/*  Forgot-password / Reset-password flow                             */
+/* ------------------------------------------------------------------ */
+
+/** Step 1 — user enters the email that was used to register */
+export const forgotPasswordEmailSchema = z.object({
+  email: emailField,
+});
+export type ForgotPasswordEmailValues = z.infer<typeof forgotPasswordEmailSchema>;
+
+/** Step 2 — user enters the OTP code received via email */
+export const forgotPasswordOtpSchema = z.object({
+  otp: z
+    .string()
+    .trim()
+    .min(1, "OTP code is required")
+    .regex(/^\d{6}$/, "OTP must be exactly 6 digits"),
+});
+export type ForgotPasswordOtpValues = z.infer<typeof forgotPasswordOtpSchema>;
+
+/** Step 3 — user sets a new password */
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(
+        PASSWORD_MIN_LENGTH,
+        `Password must be at least ${PASSWORD_MIN_LENGTH} characters`
+      )
+      .regex(/[A-Za-z]/, "Password must include at least one letter")
+      .regex(/\d/, "Password must include at least one number"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { RegisterForm } from "@/components/auth/RegisterForm";
+import { AuthCard } from "@/components/auth/AuthCard";
 
 export const metadata: Metadata = {
   title: "Register",
 };
 
 export default function RegisterPage() {
-  return <RegisterForm />;
+  return <AuthCard initialMode="register" />;
 }

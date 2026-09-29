@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { loginSchema, type LoginFormValues } from "@/lib/validators/auth";
 
-export function LoginForm() {
+interface LoginFormProps {
+  /** When provided, "Create account" triggers this callback instead of navigating. */
+  onSwitchToRegister?: () => void;
+}
+
+export function LoginForm({ onSwitchToRegister }: LoginFormProps = {}) {
   const [notice, setNotice] = useState<string | null>(null);
 
   const {
@@ -64,9 +69,9 @@ export function LoginForm() {
             error={errors.password?.message}
             {...register("password")}
           />
-          {/* TODO: arahkan ke /forgot-password setelah halamannya dibuat */}
+          {/* Link ke halaman forgot-password */}
           <Link
-            href="#"
+            href="/forgot-password"
             className="mt-3 inline-block text-sm font-medium text-navy-600 hover:text-navy-700 hover:underline"
           >
             Forgot your password?
@@ -95,12 +100,22 @@ export function LoginForm() {
 
       <div className="mt-6 text-center text-sm text-gray-700">
         <p>Don&apos;t have an account yet?</p>
-        <Link
-          href="/register"
-          className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700"
-        >
-          Create account
-        </Link>
+        {onSwitchToRegister ? (
+          <button
+            type="button"
+            onClick={onSwitchToRegister}
+            className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700 cursor-pointer bg-transparent border-none p-0"
+          >
+            Create account
+          </button>
+        ) : (
+          <Link
+            href="/register"
+            className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700"
+          >
+            Create account
+          </Link>
+        )}
       </div>
     </div>
   );

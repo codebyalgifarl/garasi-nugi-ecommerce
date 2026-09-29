@@ -12,7 +12,12 @@ import {
   type RegisterFormValues,
 } from "@/lib/validators/auth";
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  /** When provided, "Sign in here" triggers this callback instead of navigating. */
+  onSwitchToLogin?: () => void;
+}
+
+export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
   const [notice, setNotice] = useState<string | null>(null);
 
   const {
@@ -102,12 +107,22 @@ export function RegisterForm() {
 
       <div className="mt-6 text-center text-sm text-gray-700">
         <p>Already have an account?</p>
-        <Link
-          href="/login"
-          className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700"
-        >
-          Sign in here
-        </Link>
+        {onSwitchToLogin ? (
+          <button
+            type="button"
+            onClick={onSwitchToLogin}
+            className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700 cursor-pointer bg-transparent border-none p-0"
+          >
+            Sign in here
+          </button>
+        ) : (
+          <Link
+            href="/login"
+            className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700"
+          >
+            Sign in here
+          </Link>
+        )}
       </div>
     </div>
   );

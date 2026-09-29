@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { LoginForm } from "@/components/auth/LoginForm";
+import { AuthCard } from "@/components/auth/AuthCard";
 
 export const metadata: Metadata = {
   title: "Login",
 };
 
 export default function LoginPage() {
-  return <LoginForm />;
+  return <AuthCard initialMode="login" />;
 }

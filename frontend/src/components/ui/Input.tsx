@@ -1,6 +1,13 @@
 "use client";
 
-import { forwardRef, useId, type InputHTMLAttributes } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type InputHTMLAttributes,
+} from "react";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -18,6 +25,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const hasError = Boolean(error);
   const hasMessage = hasError || Boolean(hint);
 
+  // Shake animation: increment counter every time an error appears (or changes)
+  // so the wrapper re-mounts and the CSS animation re-triggers.
+  const [shakeKey, setShakeKey] = useState(0);
+  const prevErrorRef = useRef(error);
+
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) {
+      setShakeKey((k) => k + 1);
+    }
+    prevErrorRef.current = error;
+  }, [error]);
+
   const inputClasses = [
     "w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-gray-900",
     "placeholder:text-gray-400 transition-shadow",
@@ -32,13 +51,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     .join(" ");
 
   return (
-    <div className="w-full">
+    <div key={hasError ? shakeKey : undefined} className={`w-full${hasError ? " animate-shake" : ""}`}>
       <label
         htmlFor={inputId}
         className="mb-1.5 block text-sm font-semibold text-gray-900"
       >
         {label}
-        {required && <span aria-hidden="true"> *</span>}
+        {required && <span aria-hidden="true" className="text-red-500"> *</span>}
       </label>
 
       {/*
