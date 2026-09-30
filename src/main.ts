@@ -35,6 +35,7 @@ async function bootstrap() {
       'JWT-Auth', // nama key ini dipakai di @ApiBearerAuth('JWT-Auth') pada controller
     )
     .addTag('Auth', 'Registrasi, login, dan manajemen profil pengguna')
+    .addTag('Products', 'Daftar produk aktif dan detail produk berdasarkan slug')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
