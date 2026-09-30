@@ -21,6 +21,8 @@ const config: Config = {
           700: "#183072",
           800: "#122459",
           900: "#0B1841",
+          /** Bar navigasi atas versi desktop (lebih pekat dari navy-600) */
+          deep: "#062A78",
         },
         // Brand — Accent (base: gold-400)
         gold: {
@@ -34,7 +36,21 @@ const config: Config = {
           700: "#8B670A",
           800: "#5D4507",
           900: "#2E2203",
+          /** Kuning kartu Mercedes / Porsche / Oil Cooler (diambil dari Figma) */
+          card: "#E6B335",
         },
+        // Brand — Aqua (teal dari logo). Diambil dari Figma.
+        aqua: {
+          300: "#8FCBD9",
+          /** Kartu BMW / Audi / Brake Disc */
+          400: "#62B7CB",
+          /** Bar kategori Headlight */
+          600: "#4F98A7",
+          /** Untuk TEKS link di atas putih (kontras ≥ 4.5:1) */
+          700: "#1B7F92",
+        },
+        /** Latar footer gelap versi mobile */
+        ink: "#0B1613",
         // Semantic
         success: "#16A34A",
         warning: "#F59E0B",

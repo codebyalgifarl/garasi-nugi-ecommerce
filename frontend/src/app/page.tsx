@@ -1,101 +1,136 @@
-import Image from "next/image";
+import { Header } from "@/components/layout/Header";
+import { SearchBar } from "@/components/layout/SearchBar";
+import { TrustBar } from "@/components/home/TrustBar";
+import { BrandGrid } from "@/components/home/BrandGrid";
+import { NewProducts } from "@/components/home/NewProducts";
+import { CategoryShowcase } from "@/components/home/CategoryShowcase";
+import { MostSold } from "@/components/home/MostSold";
+import { PromoStrip } from "@/components/home/PromoStrip";
+import { Testimonial } from "@/components/home/Testimonial";
+import { Footer } from "@/components/layout/Footer";
+import type { ProductSummary } from "@/types/product";
+
+/* ───────────────────────────────────────────
+   Data statis sementara (dummy).
+   Nanti diganti fetch dari backend API.
+   ─────────────────────────────────────────── */
+
+const NEW_PRODUCTS: ProductSummary[] = [
+  {
+    id: "1",
+    slug: "mk5-headlight-w204-c-class-c250",
+    name: "MK5 Headlight For W204 C-Class C250",
+    brand: "Mercedes-Benz",
+    price: 4560000,
+    image: "/images/products/mks-headlight-w204.webp",
+  },
+  {
+    id: "2",
+    slug: "brembo-front-brake-pad-bmw-f30-320i",
+    name: "Brembo Front Brake Pad BMW F30 320i",
+    brand: "BMW",
+    price: 1850000,
+    image: "/images/products/brembo-brake-pad-f30.webp",
+  },
+  {
+    id: "3",
+    slug: "bilstein-b4-air-suspension-macan-95b",
+    name: "Bilstein B4 Air Suspension Macan 95B",
+    brand: "Porsche",
+    price: 12200000,
+    image: "/images/products/bilstein-b4-macan.webp",
+  },
+  {
+    id: "4",
+    slug: "ac-grille-tab-audi-q5-2009-2012",
+    name: "AC Grille Tab For Audi Q5 2009-2012",
+    brand: "Audi",
+    price: 350000,
+    image: "/images/products/ac-grille-q5.webp",
+  },
+];
+
+const MOST_SOLD_PRODUCTS: ProductSummary[] = [
+  {
+    id: "5",
+    slug: "ecu-module-n54",
+    name: "ECU Module N54",
+    brand: "BMW",
+    category: "Engine Part",
+    price: 8560000,
+    image: "/images/products/ecu-module-w204.webp",
+  },
+  {
+    id: "6",
+    slug: "cabin-filter-f30",
+    name: "Cabin Filter F30",
+    brand: "BMW",
+    category: "Accessories",
+    price: 450000,
+    image: "/images/products/cabin-filter-f30.webp",
+  },
+  {
+    id: "7",
+    slug: "ignition-coil-porsche",
+    name: "Ignition Coil Porsche",
+    brand: "Porsche",
+    category: "Engine Part",
+    price: 1380000,
+    image: "/images/products/ignition-coil-porsche.webp",
+  },
+  {
+    id: "8",
+    slug: "o2-sensor-audi-a4",
+    name: "O2 Sensor Audi A4",
+    brand: "Audi",
+    category: "Electrical",
+    price: 2580000,
+    image: "/images/products/o2-sensor-audi-a4.webp",
+  },
+];
+
+const TESTIMONIAL_DATA = {
+  quote:
+    "Kualitas suku cadang terjamin dan pelayanannya juara. Sangat membantu saat mencari headlight untuk Mercedes G-Class saya. Pasti akan belanja di sini lagi untuk kebutuhan maintenance.",
+  author: "Wibi Raouf Sutama",
+  date: "Sep 22, 2026",
+  rating: 5,
+};
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <>
+      <Header />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+      {/* Search Bar */}
+      <div className="bg-navy-600 px-4 py-3 md:bg-white md:py-0">
+        <SearchBar className="md:my-6" />
+      </div>
+
+      {/* Trust Bar (mobile only) */}
+      <TrustBar />
+
+      <main>
+        {/* Brand Showcase */}
+        <BrandGrid />
+
+        {/* New Products */}
+        <NewProducts products={NEW_PRODUCTS} />
+
+        {/* Categories */}
+        <CategoryShowcase />
+
+        {/* Most Sold Products */}
+        <MostSold products={MOST_SOLD_PRODUCTS} />
+
+        {/* Promo Strip (desktop only) */}
+        <PromoStrip />
+
+        {/* Testimonial */}
+        <Testimonial testimonial={TESTIMONIAL_DATA} />
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+      <Footer />
+    </>
   );
 }
