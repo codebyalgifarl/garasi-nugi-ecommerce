@@ -2,23 +2,21 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import {
-  PASSWORD_MIN_LENGTH,
-  registerSchema,
-  type RegisterFormValues,
-} from "@/lib/validators/auth";
+import { registerSchema, type RegisterFormValues } from "@/lib/validators/auth";
 
 interface RegisterFormProps {
-  /** When provided, "Sign in here" triggers this callback instead of navigating. */
   onSwitchToLogin?: () => void;
 }
 
 export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
+  const router = useRouter();
   const [notice, setNotice] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     register,
@@ -26,40 +24,67 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
+    // PERBAIKAN 1: Menggunakan fullName sesuai dengan auth.ts
     defaultValues: { fullName: "", email: "", password: "" },
   });
 
   async function onSubmit(values: RegisterFormValues) {
     setNotice(null);
+    setErrorMsg(null);
 
-    // ================================================================
-    // TODO [EP2-03]: ganti simulasi ini dengan call ke API register
-    // backend Garasi Nugi. Error "email sudah dipakai" dari API
-    // tampilkan pakai setError("email", { message }) dari react-hook-form.
-    // ================================================================
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    console.log("[RegisterForm] valid submit:", {
-      fullName: values.fullName,
-      email: values.email,
-    }); // jangan pernah log password
-    setNotice("Form valid. Account creation will work once the auth API is connected.");
+    try {
+      const response = await fetch("http://localhost:3001/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          // PERBAIKAN 2: Petakan fullName dari form ke name untuk dikirim ke backend
+          fullName: values.fullName,
+          email: values.email,
+          password: values.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMsg(
+          Array.isArray(data.message)
+            ? data.message[0]
+            : data.message || "Gagal melakukan registrasi."
+        );
+        return;
+      }
+
+      if (data.data?.accessToken) {
+        localStorage.setItem("accessToken", data.data.accessToken);
+        router.push("/");
+        router.refresh();
+      } else {
+        setNotice("Registrasi berhasil! Silakan masuk.");
+        setTimeout(() => {
+          if (onSwitchToLogin) onSwitchToLogin();
+          else router.push("/login");
+        }, 2000);
+      }
+    } catch (error) {
+      setErrorMsg("Gagal terhubung ke server. Pastikan backend (port 3001) menyala.");
+    }
   }
 
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg shadow-gray-200/70 sm:p-8">
       <h1 className="text-3xl font-bold text-gray-900">Register</h1>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        noValidate
-        className="mt-6 space-y-5"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-6 space-y-5">
         <Input
           label="Full Name"
           type="text"
           autoComplete="name"
-          placeholder="John Doe"
+          placeholder="Your full name"
           required
+          // PERBAIKAN 3: Ubah semua name menjadi fullName di Input
           error={errors.fullName?.message}
           {...register("fullName")}
         />
@@ -68,7 +93,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
           label="Email"
           type="email"
           autoComplete="email"
-          placeholder="Email"
+          placeholder="Email address"
           required
           error={errors.email?.message}
           {...register("email")}
@@ -78,29 +103,25 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
           label="Password"
           type="password"
           autoComplete="new-password"
-          placeholder="Create a password"
+          placeholder="Min. 8 characters, letters & numbers"
           required
-          hint={`At least ${PASSWORD_MIN_LENGTH} characters, with letters and numbers`}
           error={errors.password?.message}
           {...register("password")}
         />
 
+        {errorMsg && (
+          <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {errorMsg}
+          </div>
+        )}
+
         {notice && (
-          <div
-            role="status"
-            className="rounded-lg border border-info/30 bg-blue-50 px-4 py-3 text-sm text-blue-800"
-          >
+          <div role="status" className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
             {notice}
           </div>
         )}
 
-        <Button
-          type="submit"
-          size="lg"
-          fullWidth
-          isLoading={isSubmitting}
-          loadingText="Creating account..."
-        >
+        <Button type="submit" size="lg" fullWidth isLoading={isSubmitting} loadingText="Creating account...">
           Create Account
         </Button>
       </form>
@@ -116,10 +137,7 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
             Sign in here
           </button>
         ) : (
-          <Link
-            href="/login"
-            className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700"
-          >
+          <Link href="/login" className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700">
             Sign in here
           </Link>
         )}

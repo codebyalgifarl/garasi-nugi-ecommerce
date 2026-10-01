@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
@@ -9,12 +10,12 @@ import { Input } from "@/components/ui/Input";
 import { loginSchema, type LoginFormValues } from "@/lib/validators/auth";
 
 interface LoginFormProps {
-  /** When provided, "Create account" triggers this callback instead of navigating. */
   onSwitchToRegister?: () => void;
 }
 
 export function LoginForm({ onSwitchToRegister }: LoginFormProps = {}) {
-  const [notice, setNotice] = useState<string | null>(null);
+  const router = useRouter();
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     register,
@@ -26,80 +27,95 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps = {}) {
   });
 
   async function onSubmit(values: LoginFormValues) {
-    setNotice(null);
+    setErrorMsg(null);
 
-    // ================================================================
-    // TODO [EP2-03]: ganti simulasi ini dengan call ke API auth
-    // backend Garasi Nugi (BUKAN langsung ke Jubelio), lalu:
-    //   1. simpan token/session
-    //   2. router.push("/") → redirect ke homepage (AC ke-3)
-    //   3. tampilkan error dari API di bawah (AC ke-2)
-    // ================================================================
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    console.log("[LoginForm] valid submit:", { email: values.email }); // jangan pernah log password
-    setNotice("Form valid. Sign-in will work once the auth API is connected.");
+    try {
+      // Mengirim request login ke backend
+      const response = await fetch("http://localhost:3001/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      // LOG BANTUAN: Menampilkan isi balasan backend ke console browser
+      console.log("Data balasan dari NestJS:", data);
+
+      if (!response.ok) {
+        setErrorMsg(
+          Array.isArray(data.message)
+            ? data.message[0]
+            : data.message || "Gagal login. Pastikan email dan password Anda benar."
+        );
+        return;
+      }
+
+      // PERBAIKAN: Memborong semua kemungkinan nama variabel token dari NestJS
+      const token = data.data?.accessToken || data.accessToken || data.data?.access_token || data.access_token || data.token;
+
+      // Jika berhasil login, simpan token JWT dan masuk ke halaman utama
+      if (token) {
+        localStorage.setItem("accessToken", token);
+        router.push("/");
+        router.refresh();
+      } else {
+        setErrorMsg("Token tidak ditemukan. Silakan cek tab Console (Inspect) di browser!");
+      }
+    } catch (error) {
+      setErrorMsg("Gagal terhubung ke server. Pastikan backend (port 3001) menyala.");
+    }
   }
 
   return (
     <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg shadow-gray-200/70 sm:p-8">
       <h1 className="text-3xl font-bold text-gray-900">Login</h1>
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        noValidate
-        className="mt-6 space-y-5"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-6 space-y-5">
         <Input
           label="Email"
           type="email"
           autoComplete="email"
-          placeholder="Email"
+          placeholder="Email address"
           required
           error={errors.email?.message}
           {...register("email")}
         />
 
-        <div>
-          <Input
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            placeholder="Password"
-            required
-            error={errors.password?.message}
-            {...register("password")}
-          />
-          {/* Link ke halaman forgot-password */}
-          <Link
-            href="/forgot-password"
-            className="mt-3 inline-block text-sm font-medium text-navy-600 hover:text-navy-700 hover:underline"
-          >
+        <Input
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          placeholder="Your password"
+          required
+          error={errors.password?.message}
+          {...register("password")}
+        />
+
+        <div className="flex items-center justify-between">
+          <Link href="/forgot-password" className="text-sm font-medium text-navy-600 hover:text-navy-500">
             Forgot your password?
           </Link>
         </div>
 
-        {notice && (
-          <div
-            role="status"
-            className="rounded-lg border border-info/30 bg-blue-50 px-4 py-3 text-sm text-blue-800"
-          >
-            {notice}
+        {errorMsg && (
+          <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {errorMsg}
           </div>
         )}
 
-        <Button
-          type="submit"
-          size="lg"
-          fullWidth
-          isLoading={isSubmitting}
-          loadingText="Signing in..."
-        >
+        <Button type="submit" size="lg" fullWidth isLoading={isSubmitting} loadingText="Signing in...">
           Sign in
         </Button>
       </form>
 
       <div className="mt-6 text-center text-sm text-gray-700">
-        <p>Don&apos;t have an account yet?</p>
+        <p>Don't have an account yet?</p>
         {onSwitchToRegister ? (
           <button
             type="button"
@@ -109,10 +125,7 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps = {}) {
             Create account
           </button>
         ) : (
-          <Link
-            href="/register"
-            className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700"
-          >
+          <Link href="/register" className="mt-1 inline-block font-semibold text-navy-600 underline underline-offset-4 hover:text-navy-700">
             Create account
           </Link>
         )}
