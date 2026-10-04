@@ -1,29 +1,3 @@
-<<<<<<< HEAD
-# Dependencies
-node_modules/
-
-# Environment variables
-.env
-.env.local
-.env.development
-.env.production
-
-# Next.js
-.next/
-
-# Build
-dist/
-
-# Testing
-coverage/
-
-# Logs
-*.log
-
-# OS
-.DS_Store
-Thumbs.db
-=======
 # compiled output
 /dist
 /node_modules
@@ -43,6 +17,7 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+Thumbs.db
 
 # Tests
 /coverage
@@ -66,10 +41,12 @@ lerna-debug.log*
 
 # dotenv environment variable files
 .env
+.env.local
+.env.development
 .env.development.local
 .env.test.local
 .env.production.local
-.env.local
+.env.production
 
 # temp directory
 .temp
@@ -83,4 +60,6 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
->>>>>>> origin/feature/ep1-06-setup
+
+# Debug/temporary files (jangan dicommit)
+error-sinkronisasi.md
