@@ -7,7 +7,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { registerSchema, type RegisterFormValues } from "@/lib/validators/auth";
+import { ApiError } from "@/lib/api/client";
+import { AUTH_ERROR_CODES, getAuthErrorMessage, register as registerUser } from "@/lib/api/auth";
+import {
+  PASSWORD_MIN_LENGTH,
+  registerSchema,
+  type RegisterFormValues,
+} from "@/lib/validators/auth";
 
 interface RegisterFormProps {
   onSwitchToLogin?: () => void;
@@ -21,10 +27,10 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    // PERBAIKAN 1: Menggunakan fullName sesuai dengan auth.ts
     defaultValues: { fullName: "", email: "", password: "" },
   });
 
@@ -33,43 +39,25 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
     setErrorMsg(null);
 
     try {
-      const response = await fetch("http://localhost:3001/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          // PERBAIKAN 2: Petakan fullName dari form ke name untuk dikirim ke backend
-          fullName: values.fullName,
-          email: values.email,
-          password: values.password,
-        }),
+      // Backend hanya mengembalikan data user (tanpa token), jadi user diarahkan login manual.
+      await registerUser({
+        fullName: values.fullName,
+        email: values.email,
+        password: values.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrorMsg(
-          Array.isArray(data.message)
-            ? data.message[0]
-            : data.message || "Gagal melakukan registrasi."
-        );
+      setNotice("Account created! Redirecting you to sign in...");
+      setTimeout(() => {
+        if (onSwitchToLogin) onSwitchToLogin();
+        else router.push("/login");
+      }, 2000);
+    } catch (error) {
+      // Email sudah dipakai → tampilkan langsung di field email, bukan banner umum.
+      if (error instanceof ApiError && error.code === AUTH_ERROR_CODES.EMAIL_ALREADY_EXISTS) {
+        setError("email", { message: getAuthErrorMessage(error) }, { shouldFocus: true });
         return;
       }
-
-      if (data.data?.accessToken) {
-        localStorage.setItem("accessToken", data.data.accessToken);
-        router.push("/");
-        router.refresh();
-      } else {
-        setNotice("Registrasi berhasil! Silakan masuk.");
-        setTimeout(() => {
-          if (onSwitchToLogin) onSwitchToLogin();
-          else router.push("/login");
-        }, 2000);
-      }
-    } catch (error) {
-      setErrorMsg("Gagal terhubung ke server. Pastikan backend (port 3001) menyala.");
+      setErrorMsg(getAuthErrorMessage(error));
     }
   }
 
@@ -84,7 +72,6 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
           autoComplete="name"
           placeholder="Your full name"
           required
-          // PERBAIKAN 3: Ubah semua name menjadi fullName di Input
           error={errors.fullName?.message}
           {...register("fullName")}
         />
@@ -103,8 +90,9 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps = {}) {
           label="Password"
           type="password"
           autoComplete="new-password"
-          placeholder="Min. 8 characters, letters & numbers"
+          placeholder="Create a password"
           required
+          hint={`At least ${PASSWORD_MIN_LENGTH} characters, with letters and numbers`}
           error={errors.password?.message}
           {...register("password")}
         />
