@@ -7,49 +7,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { login, saveAccessToken, getAuthErrorMessage } from "@/lib/api/auth";
 import { loginSchema, type LoginFormValues } from "@/lib/validators/auth";
-
-/**
- * Shape response /auth/login dari backend Garasi Nugi.
- * Sumber: src/auth/dto/auth-response.dto.ts → LoginResponseDto.
- * CATATAN: backend pakai snake_case (access_token, full_name, is_active).
- */
-interface LoginResponse {
-  access_token: string;
-  user: {
-    id: string;
-    full_name: string;
-    email: string;
-    phone: string | null;
-    role: "customer" | "admin";
-    is_active: boolean;
-    created_at: string;
-    updated_at: string;
-  };
-}
-
-/** Shape response error dari NestJS (400/401/409). */
-interface ApiError {
-  statusCode: number;
-  // 400: string | string[]. 401/409: { code, message } (lihat ErrorResponseDto)
-  message: string | string[] | { code: string; message: string };
-  error: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-
-/** Ambil pesan error user-friendly dari berbagai bentuk response NestJS. */
-function extractErrorMessage(data: unknown, fallback: string): string {
-  const err = data as ApiError;
-  if (!err?.message) return fallback;
-  if (typeof err.message === "string") return err.message;
-  if (Array.isArray(err.message)) return err.message[0] ?? fallback;
-  // Shape { code, message } untuk 401/409
-  if (typeof err.message === "object" && "message" in err.message) {
-    return err.message.message;
-  }
-  return fallback;
-}
 
 interface LoginFormProps {
   onSwitchToRegister?: () => void;
@@ -72,42 +31,19 @@ export function LoginForm({ onSwitchToRegister }: LoginFormProps = {}) {
     setErrorMsg(null);
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-        }),
+      const { access_token, user } = await login({
+        email: values.email,
+        password: values.password,
       });
 
-      const data: LoginResponse | ApiError = await response.json();
-
-      if (!response.ok) {
-        setErrorMsg(
-          extractErrorMessage(
-            data,
-            "Email or password is incorrect. Please try again."
-          )
-        );
-        return;
-      }
-
-      const loginData = data as LoginResponse;
-
-      // Simpan token + data user. Token dipakai di Authorization header,
-      // data user dipakai untuk menampilkan nama di header, dsb.
-      // TODO [security]: pindah ke httpOnly cookie sebelum go-live.
-      localStorage.setItem("accessToken", loginData.access_token);
-      localStorage.setItem("user", JSON.stringify(loginData.user));
+      saveAccessToken(access_token);
+      // Simpan data user supaya header bisa greeting tanpa panggil /auth/me lagi.
+      localStorage.setItem("user", JSON.stringify(user));
 
       router.push("/");
       router.refresh();
-    } catch {
-      // Masuk sini kalau network error (backend mati, CORS, dll)
-      setErrorMsg(
-        "We couldn't reach the server. Please check your connection and try again."
-      );
+    } catch (error) {
+      setErrorMsg(getAuthErrorMessage(error));
     }
   }
 
