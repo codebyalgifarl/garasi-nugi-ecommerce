@@ -6,6 +6,9 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // ─── Mengizinkan akses dari Frontend (CORS) ───────────────────────────────
+  app.enableCors();
+
   // ─── Global Validation Pipe ───────────────────────────────────────────────
   app.useGlobalPipes(
     new ValidationPipe({
@@ -47,9 +50,10 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  // ─── Mengubah port default menjadi 3001 ───────────────────────────────────
+  await app.listen(process.env.PORT ?? 3001);
 
-  console.log(`\n🚀 Application running on: http://localhost:${process.env.PORT ?? 3000}`);
-  console.log(`📄 Swagger docs available at: http://localhost:${process.env.PORT ?? 3000}/api/docs\n`);
+  console.log(`\n🚀 Application running on: http://localhost:${process.env.PORT ?? 3001}`);
+  console.log(`📄 Swagger docs available at: http://localhost:${process.env.PORT ?? 3001}/api/docs\n`);
 }
 void bootstrap();

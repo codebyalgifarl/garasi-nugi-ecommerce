@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+/* ========================================
+   Auth Card — Fade Crossfade Transition
+   ======================================== */
+
+.auth-card-container {
+  position: relative;
+  width: 100%;
+  max-width: 28rem; /* matches max-w-md */
+}
+
+.auth-card-panel {
+  transition:
+    opacity 300ms ease-in-out,
+    transform 300ms ease-in-out;
+  will-change: opacity, transform;
+}
+
+/* Fully visible & interactive */
+.auth-card-panel--active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+  position: relative;
+}
+
+/* Fading out — still in the flow but going transparent */
+.auth-card-panel--fading-out {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  visibility: visible;
+  position: relative;
+}
+
+/* Completely hidden — pulled out of flow */
+.auth-card-panel--hidden {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* ========================================
+   Input — Shake on Error
+   ======================================== */
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  50% {
+    transform: translateX(-6px);
+  }
+  30%,
+  70% {
+    transform: translateX(6px);
+  }
+  40%,
+  80% {
+    transform: translateX(-4px);
+  }
+  60%,
+  90% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
